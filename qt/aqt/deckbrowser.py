@@ -188,11 +188,13 @@ class DeckBrowser:
         self.web.stdHtml(
             self._v1_upgrade_message(data.sched_upgrade_required)
             + self._body % content.__dict__,
-            css=["css/deckbrowser.css"],
+            css=["css/deckbrowser.css", "css/activity-heatmap.css"],
             js=[
                 "js/vendor/jquery.min.js",
                 "js/vendor/jquery-ui.min.js",
                 "js/deckbrowser.js",
+                "js/activity-heatmap.js",
+                "js/deckbrowser-enhanced.js",
             ],
             context=self,
         )

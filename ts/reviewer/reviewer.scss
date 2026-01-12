@@ -3,6 +3,7 @@
 
 @use "../lib/sass/vars";
 @use "../routes/image-occlusion/review";
+@use "modern-theme";
 
 hr {
     background-color: vars.palette(darkgray, 0);

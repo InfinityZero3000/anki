@@ -19,6 +19,7 @@ from aqt.utils import (
     saveGeom,
     tr,
 )
+from aqt.modern_navigation import add_modern_back_button
 from aqt.webview import AnkiWebView, AnkiWebViewKind
 
 
@@ -43,13 +44,20 @@ class DeckOptionsDialog(QDialog):
         disable_help_button(self)
         restoreGeom(self, self.TITLE, default_size=(800, 800))
         add_close_shortcut(self)
-
-        self.web = AnkiWebView(kind=AnkiWebViewKind.DECK_OPTIONS)
-        self.web.load_sveltekit_page(f"deck-options/{self._deck['id']}")
+        
+        # Create layout first
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.web)
         self.setLayout(layout)
+        
+        # Add modern back button (will be inserted at top)
+        add_modern_back_button(self, text="← Quay lại", show_home=True)
+
+        # Create and add web view
+        self.web = AnkiWebView(kind=AnkiWebViewKind.DECK_OPTIONS)
+        self.web.load_sveltekit_page(f"deck-options/{self._deck['id']}")
+        layout.addWidget(self.web)
+        
         self.show()
         self.web.hide_while_preserving_layout()
         self.setWindowTitle(

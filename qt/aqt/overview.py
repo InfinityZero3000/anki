@@ -255,23 +255,84 @@ class Overview:
 """
 
         return f"""
-<table width=400 cellpadding=5>
+<table width=600 cellpadding=5>
 <tr><td align=center valign=top>
-<table cellspacing=5>
+<table cellspacing=5 style="white-space: nowrap;">
 {number_row(tr.actions_new(), "new-count", counts[0], buried_new)}
 {number_row(tr.scheduling_learning(), "learn-count", counts[1], buried_learning)}
 {number_row(tr.studying_to_review(), "review-count", counts[2], buried_review)}
 </table>
-</td><td align=center>
+</td><td align=center valign=middle>
 {but("study", tr.studying_study_now(), id="study", extra=" autofocus")}</td></tr></table>"""
 
     _body = """
+<style>
+    body {
+        font-size: 18px;
+    }
+    h3 {
+        font-size: 2.5em !important;
+        margin-top: 1.5em !important;
+        margin-bottom: 0.8em !important;
+        font-weight: 600 !important;
+    }
+    .descfont {
+        font-size: 1.2em !important;
+    }
+    table {
+        font-size: 1.4em !important;
+    }
+    table td {
+        padding: 12px 20px !important;
+        white-space: nowrap !important;
+    }
+    .smallLink {
+        font-size: 1.1em !important;
+    }
+    /* Style for Study Now button */
+    button#study {
+        font-size: 1.6em !important;
+        padding: 16px 48px !important;
+        font-weight: 600 !important;
+        min-width: 200px !important;
+        border-radius: 8px !important;
+    }
+</style>
+<div style="position: fixed; top: 0; left: 0; right: 0; z-index: 1000; 
+    background: linear-gradient(135deg, #2563eb 0%%, #3b82f6 100%%); 
+    padding: 4px 8px; border-bottom: 1px solid rgba(37, 99, 235, 0.3); 
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); max-height: 36px; min-height: 36px;">
+    <button onclick='pycmd("decks")' 
+        style="background: rgba(255, 255, 255, 0.15); color: white; 
+        border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; 
+        padding: 4px 12px; font-weight: 600; font-size: 12px; cursor: pointer;
+        margin-right: 6px; transition: all 0.3s ease; max-height: 28px;"
+        onmouseover="this.style.background='rgba(255, 255, 255, 0.25)'"
+        onmouseout="this.style.background='rgba(255, 255, 255, 0.15)'">
+        ← Quay lại
+    </button>
+    <button onclick='pycmd("decks")' 
+        style="background: rgba(255, 255, 255, 0.15); color: white; 
+        border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 5px; 
+        padding: 4px 10px; font-weight: 600; font-size: 12px; cursor: pointer;
+        transition: all 0.3s ease; max-height: 28px; display: inline-flex; align-items: center; gap: 4px;"
+        onmouseover="this.style.background='rgba(255, 255, 255, 0.25)'"
+        onmouseout="this.style.background='rgba(255, 255, 255, 0.15)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+        Trang chủ
+    </button>
+</div>
+<div style="margin-top: 42px; padding-top: 15vh;">
 <center>
 <h3>%(deck)s</h3>
 %(shareLink)s
 %(desc)s
 %(table)s
 </center>
+</div>
 """
 
     def edit_description(self) -> None:

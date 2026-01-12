@@ -22,6 +22,15 @@ import { registerPackage } from "@tslib/runtime-require";
 import { allImagesLoaded, preloadAnswerImages } from "./images";
 import { preloadResources } from "./preload";
 
+// Enhanced modern features
+import "./modern-theme";
+import * as modernTheme from "./modern-theme";
+import "./ai-example-ui";
+import "./stats-dashboard-enhanced";
+import "./gamification";
+import "./quick-actions";
+import "./back-button";
+
 declare const MathJax: any;
 
 type Callback = () => void | Promise<void>;
@@ -159,6 +168,9 @@ export async function _updateQA(
 
     qa.style.opacity = "1";
 
+    // Apply modern theme effects
+    modernTheme.addCardFlipEffect();
+
     await _runHook(onShownHook);
 }
 
@@ -200,6 +212,9 @@ export function _showAnswer(a: string, bodyclass: string): void {
                     //  when previewing
                     document.body.className = bodyclass;
                 }
+
+                // Apply answer reveal animation
+                modernTheme.addAnswerRevealAnimation();
 
                 // avoid scrolling to the answer until images load
                 allImagesLoaded().then(scrollToAnswer);

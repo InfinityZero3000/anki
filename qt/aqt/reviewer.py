@@ -348,6 +348,7 @@ class Reviewer:
             js=[
                 "js/mathjax.js",
                 "js/vendor/mathjax/tex-chtml-full.js",
+                "js/activity-heatmap.js",
                 "js/reviewer.js",
             ],
             context=self,
@@ -567,6 +568,8 @@ class Reviewer:
     def _after_answering(self, ease: Literal[1, 2, 3, 4]) -> None:
         gui_hooks.reviewer_did_answer_card(self, self.card, ease)
         self._answeredIds.append(self.card.id)
+        # Record study activity for heatmap
+        self._record_study_activity()
         if not self.check_timebox():
             self.nextCard()
 
@@ -672,7 +675,7 @@ class Reviewer:
         else:
             self._answerCard(self._defaultEase())
 
-    def _linkHandler(self, url: str) -> None:
+    def _linkHandler(self, url: str) -> Any:
         if url == "ans":
             self._getTypedAnswer()
         elif url.startswith("ease"):
@@ -688,6 +691,10 @@ class Reviewer:
             self.mw.toolbarWeb.update_background_image()
         elif url == "statesMutated":
             self._states_mutated = True
+        elif url == "getStats":
+            return self._getStats()
+        elif url == "getDailyStats":
+            return self._getDailyStats()
         else:
             print("unrecognized anki link:", url)
 
@@ -1221,6 +1228,102 @@ timerStopped = false;
             self._auto_advance_to_answer_if_enabled()
         elif self.state == "answer":
             self._auto_advance_to_question_if_enabled()
+
+    def _record_study_activity(self) -> None:
+        """Record study activity to localStorage via JavaScript bridge"""
+        self.web.eval("if (typeof recordStudyActivity === 'function') { recordStudyActivity(1); }")
+
+    def _getStats(self) -> str:
+        """Get study statistics from collection database"""
+        from datetime import datetime, timedelta
+        
+        col = self.mw.col
+        cutoff = int((datetime.now() - timedelta(days=30)).timestamp() * 1000)
+        
+        # Cards learned (mature + young cards)
+        cards_learned = col.db.scalar(
+            "SELECT COUNT(*) FROM cards WHERE queue >= 2"
+        ) or 0
+        
+        # Total study time (in minutes) from last 30 days
+        study_time = col.db.scalar(
+            f"SELECT SUM(time)/1000/60 FROM revlog WHERE id > {cutoff}"
+        ) or 0
+        
+        # Reviews completed last 30 days
+        reviews_completed = col.db.scalar(
+            f"SELECT COUNT(*) FROM revlog WHERE id > {cutoff}"
+        ) or 0
+        
+        # Calculate streak days
+        streak_days = 0
+        today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        for i in range(365):
+            day_start = int((today - timedelta(days=i)).timestamp() * 1000)
+            day_end = int((today - timedelta(days=i-1)).timestamp() * 1000)
+            count = col.db.scalar(
+                f"SELECT COUNT(*) FROM revlog WHERE id >= {day_start} AND id < {day_end}"
+            )
+            if count and count > 0:
+                streak_days += 1
+            elif i > 0:  # Stop counting if we hit a day with no reviews (but not today)
+                break
+        
+        # Accuracy from last 100 reviews
+        recent_reviews = col.db.list(
+            "SELECT ease FROM revlog ORDER BY id DESC LIMIT 100"
+        )
+        if recent_reviews:
+            correct = sum(1 for ease in recent_reviews if ease >= 2)
+            accuracy = (correct / len(recent_reviews)) * 100
+        else:
+            accuracy = 0
+        
+        stats = {
+            "cardsLearned": int(cards_learned),
+            "studyTime": int(study_time),
+            "reviewsCompleted": int(reviews_completed),
+            "streakDays": int(streak_days),
+            "accuracy": round(accuracy, 1)
+        }
+        
+        return json.dumps(stats)
+
+    def _getDailyStats(self) -> str:
+        """Get daily study statistics for the past 14 days"""
+        from datetime import datetime, timedelta
+        
+        col = self.mw.col
+        daily_stats = []
+        
+        for i in range(13, -1, -1):  # Last 14 days
+            day = datetime.now() - timedelta(days=i)
+            day_start = int(day.replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+            day_end = int((day + timedelta(days=1)).replace(hour=0, minute=0, second=0, microsecond=0).timestamp() * 1000)
+            
+            # Cards reviewed
+            cards_reviewed = col.db.scalar(
+                f"SELECT COUNT(*) FROM revlog WHERE id >= {day_start} AND id < {day_end}"
+            ) or 0
+            
+            # Study time (in minutes)
+            study_time = col.db.scalar(
+                f"SELECT SUM(time)/1000/60 FROM revlog WHERE id >= {day_start} AND id < {day_end}"
+            ) or 0
+            
+            # New cards
+            new_cards = col.db.scalar(
+                f"SELECT COUNT(*) FROM revlog WHERE id >= {day_start} AND id < {day_end} AND type = 0"
+            ) or 0
+            
+            daily_stats.append({
+                "date": day.strftime("%Y-%m-%d"),
+                "cardsReviewed": int(cards_reviewed),
+                "studyTime": int(study_time),
+                "newCards": int(new_cards)
+            })
+        
+        return json.dumps(daily_stats)
 
     # legacy
 

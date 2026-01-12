@@ -33,6 +33,7 @@ from aqt.utils import (
     showWarning,
     tr,
 )
+from aqt.modern_navigation import add_modern_back_button, add_close_button_to_dialog
 
 
 class Preferences(QDialog):
@@ -68,6 +69,8 @@ class Preferences(QDialog):
         self.setup_global()
         self.setup_configurable_answer_keys()
         add_close_shortcut(self)
+        # Add modern back button
+        add_modern_back_button(self, text="← Quay lại", show_home=True)
         self.show()
 
     def setup_configurable_answer_keys(self):

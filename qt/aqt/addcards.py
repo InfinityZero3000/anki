@@ -33,6 +33,7 @@ from aqt.utils import (
     tooltip,
     tr,
 )
+from aqt.modern_navigation import add_modern_back_button
 
 
 class AddCards(QMainWindow):
@@ -59,6 +60,8 @@ class AddCards(QMainWindow):
         gui_hooks.add_cards_did_init(self)
         if not is_mac:
             self.setMenuBar(None)
+        # Add modern back button
+        add_modern_back_button(self, text="← Quay lại", show_home=True)
         self.show()
 
     def set_deck(self, deck_id: DeckId) -> None:

@@ -153,6 +153,7 @@ class Browser(QMainWindow):
         self.current_card: Card | None = None
         self.setupSidebar()
         self.setup_table()
+        self.setupBackButton()
         self.setupMenus()
         self.setupHooks()
         self.setupEditor()
@@ -296,6 +297,79 @@ class Browser(QMainWindow):
                 active_window.close()
         else:
             self.close()
+
+    def setupBackButton(self) -> None:
+        """Add a modern back button to return to deck browser"""
+        # Create toolbar if it doesn't exist
+        toolbar = self.findChild(QToolBar, "backToolbar")
+        if not toolbar:
+            toolbar = QToolBar("Back Navigation")
+            toolbar.setObjectName("backToolbar")
+            toolbar.setMovable(False)
+            toolbar.setFloatable(False)
+            
+            # Modern styling - very compact version
+            toolbar.setStyleSheet("""
+                QToolBar {
+                    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
+                        stop:0 #2563eb, stop:1 #3b82f6);
+                    border: none;
+                    border-bottom: 1px solid rgba(37, 99, 235, 0.3);
+                    padding: 4px 8px;
+                    spacing: 6px;
+                    max-height: 36px;
+                    min-height: 36px;
+                }
+                QToolButton {
+                    background: rgba(255, 255, 255, 0.15);
+                    color: white;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    border-radius: 5px;
+                    padding: 4px 12px;
+                    font-weight: 600;
+                    font-size: 12px;
+                    min-width: 80px;
+                    max-height: 28px;
+                }
+                QToolButton:hover {
+                    background: rgba(255, 255, 255, 0.25);
+                    border-color: rgba(255, 255, 255, 0.5);
+                }
+                QToolButton:pressed {
+                    background: rgba(255, 255, 255, 0.35);
+                }
+            """)
+            
+            # Add toolbar to top
+            self.addToolBar(Qt.ToolBarArea.TopToolBarArea, toolbar)
+        
+        # Clear existing actions
+        toolbar.clear()
+        
+        # Create back action
+        back_action = QAction("← Quay lại", self)
+        back_action.setShortcut("Ctrl+B")
+        back_action.setToolTip("Quay về trang chính (Ctrl+B)")
+        qconnect(back_action.triggered, self.onBackToDeckBrowser)
+        
+        toolbar.addAction(back_action)
+        
+        # Add spacer to push content to left
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        toolbar.addWidget(spacer)
+        
+        # Add deck browser button as alternative with home icon
+        home_action = QAction("[Home]", self)
+        home_action.setToolTip("Về trang chính")
+        qconnect(home_action.triggered, self.onBackToDeckBrowser)
+        toolbar.addAction(home_action)
+
+    def onBackToDeckBrowser(self) -> None:
+        """Return to deck browser"""
+        self.close()
+        # Ensure deck browser is visible
+        self.mw.moveToState("deckBrowser")
 
     def setupMenus(self) -> None:
         # actions

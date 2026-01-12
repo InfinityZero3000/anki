@@ -25,6 +25,7 @@ from aqt.utils import (
     tooltip,
     tr,
 )
+from aqt.modern_navigation import add_modern_back_button
 from aqt.webview import LegacyStatsWebView
 
 
@@ -70,6 +71,8 @@ class NewDeckStats(QDialog):
         b.setAutoDefault(False)
         maybeHideClose(self.form.buttonBox)
         add_close_shortcut(self)
+        # Add modern back button
+        add_modern_back_button(self, text="← Quay lại", show_home=True)
         gui_hooks.stats_dialog_will_show(self)
         self.form.web.hide_while_preserving_layout()
         self.show()

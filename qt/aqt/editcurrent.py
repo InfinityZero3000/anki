@@ -10,6 +10,7 @@ from anki.errors import NotFoundError
 from aqt import gui_hooks
 from aqt.qt import *
 from aqt.utils import add_close_shortcut, restoreGeom, saveGeom, tr
+from aqt.modern_navigation import add_modern_back_button
 
 
 class EditCurrent(QMainWindow):
@@ -41,6 +42,8 @@ class EditCurrent(QMainWindow):
         self.compat_add_shorcut = QShortcut(QKeySequence("Ctrl+Enter"), self)
         qconnect(self.compat_add_shorcut.activated, close_button.click)
         gui_hooks.operation_did_execute.append(self.on_operation_did_execute)
+        # Add modern back button
+        add_modern_back_button(self, text="← Quay lại", show_home=True)
         self.show()
 
     def on_operation_did_execute(
